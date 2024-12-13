@@ -402,5 +402,24 @@
 			}
 		}
 	},
-	"Outputs": {}
+	"Outputs": {
+		"ec2InstanceSpringIp": {
+			"Description": "Public IP address of the ec2 spring instance",
+			"Value": {
+				"Fn::GetAtt": [
+					"ec2InstanceSpring",
+					"PublicIp"
+				]
+			}
+		},
+		"ec2InstanceMySQLIp": {
+			"Description": "Public IP address of the ec2 sql instance",
+			"Value": {
+				"Fn::GetAtt": [
+					"ec2InstanceMySQL",
+					"PublicIp"
+				]
+			}
+		}
+	}
 }
