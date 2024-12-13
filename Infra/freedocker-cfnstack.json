@@ -282,12 +282,14 @@
 						"SubnetId": {
 							"Ref": "projectpublicsubnet"
 						},
-						"GroupSet": {
-							"Fn::GetAtt": [
-								"projectEC2secGroup",
-								"GroupId"
-							]
-						}
+						"GroupSet": [
+							{
+								"Fn::GetAtt": [
+									"projectEC2secGroup",
+									"GroupId"
+								]
+							}
+						]
 					}
 				],
 				"UserData": {
@@ -353,12 +355,14 @@
 						"SubnetId": {
 							"Ref": "projectpublicsubnet"
 						},
-						"GroupSet": {
-							"Fn::GetAtt": [
-								"projectEC2secGroup",
-								"GroupId"
-							]
-						}
+						"GroupSet": [
+							{
+								"Fn::GetAtt": [
+									"projectEC2secGroup",
+									"GroupId"
+								]
+							}
+						]
 					}
 				],
 				"UserData": {
