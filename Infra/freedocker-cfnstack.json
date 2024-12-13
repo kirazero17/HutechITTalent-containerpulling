@@ -17,7 +17,7 @@
 			"Default": "172.19.12.0/25",
 			"Description": "CIDR of public subnet"
 		},
-		"privatedcidr": {
+		"privatecidr": {
 			"Type": "String",
 			"Default": "172.19.12.128/25",
 			"Description": "CIDR of private subnet"
@@ -81,7 +81,7 @@
 			"Type": "AWS::EC2::Subnet",
 			"Properties": {
 				"CidrBlock": {
-					"Ref": "publiccidr"
+					"Ref": "privatecidr"
 				},
 				"VpcId": {
 					"Ref": "projectvpc"
@@ -121,7 +121,7 @@
 					"Ref": "projectvpc"
 				},
 				"InternetGatewayId": {
-					"Ref": "igwName"
+					"Ref": "projectinternetgateway"
 				}
 			}
 		},
@@ -271,7 +271,10 @@
 				"InstanceType": {
 					"Ref": "projectinstancetype"
 				},
-				"InstanceProfile": "SpringInstanceProfile",
+				"IamInstanceProfile": "SpringInstanceProfile",
+				"KeyName" : {
+					"Ref": "keypair"
+				},
 				"NetworkInterfaces": [
 					{
 						"DeviceIndex": "0",
@@ -287,30 +290,35 @@
 						}
 					}
 				],
-				"Userdata": {
+				"UserData": {
 					"Fn::Base64": {
-						"Fn::Join": [
+						"Fn::Join": 
+						[
 							"\n",
-							"#!/bin/bash",
-							"sudo dnf update -y",
-							"sudo dnf install docker git wget -y",
-							"sudo usermod -aG docker ec2-user",
-							"systemctl enable docker",
-							"sudo reboot",
-							"sudo service docker start",
-							"sudo bash -c 'git clone https://github.com/kirazero17/HutechITTalent-containerpulling.git'",
-							{
-								"Fn::Sub": [
-									"MYSQL_IP=${MYSQL_IP}",
-									{
-										"Fn::GetAtt": [
-											"ec2InstanceMySQL",
-											"PrivateIpAddress"
-										]
-									}
-								]
-							},
-							"sudo bash -c 'cd /home/ec2-user/HutechITTalent-containerpulling && docker compose -f docker-compose-spring.yaml up'"
+							[
+								"#!/bin/bash",
+								"sudo dnf update -y",
+								"sudo dnf install docker git wget -y",
+								"sudo usermod -aG docker ec2-user",
+								"systemctl enable docker",
+								"sudo reboot",
+								"sudo service docker start",
+								"sudo bash -c 'git clone https://github.com/kirazero17/HutechITTalent-containerpulling.git'",
+								{
+									"Fn::Sub": [
+										"MYSQL_IP=${MYSQL_IP}",
+										{
+											"MYSQL_IP": {
+												"Fn::GetAtt": [
+													"ec2InstanceMySQL",
+													"PrivateIpAddress"
+												]
+											}
+										}
+									]
+								},
+								"sudo bash -c 'cd /home/ec2-user/HutechITTalent-containerpulling && docker compose -f docker-compose-spring.yaml up'"
+							]
 						]
 					}
 				},
@@ -331,7 +339,10 @@
 				"InstanceType": {
 					"Ref": "projectinstancetype"
 				},
-				"InstanceProfile": "MySqlInstanceProfile",
+				"IamInstanceProfile": "MySqlInstanceProfile",
+				"KeyName" : {
+					"Ref": "keypair"
+				},
 				"NetworkInterfaces": [
 					{
 						"DeviceIndex": "0",
@@ -347,19 +358,21 @@
 						}
 					}
 				],
-				"Userdata": {
+				"UserData": {
 					"Fn::Base64": {
 						"Fn::Join": [
 							"\n",
-							"#!/bin/bash",
-							"sudo dnf update -y",
-							"sudo dnf install docker git wget -y",
-							"sudo usermod -aG docker ec2-user",
-							"systemctl enable docker",
-							"sudo reboot",
-							"sudo service docker start",
-							"sudo bash -c 'git clone https://github.com/kirazero17/HutechITTalent-containerpulling.git'",
-							"sudo bash -c 'cd /home/ec2-user/HutechITTalent-containerpulling && docker compose -f docker-compose-mysql.yaml up'"
+							[
+								"#!/bin/bash",
+								"sudo dnf update -y",
+								"sudo dnf install docker git wget -y",
+								"sudo usermod -aG docker ec2-user",
+								"systemctl enable docker",
+								"sudo reboot",
+								"sudo service docker start",
+								"sudo bash -c 'git clone https://github.com/kirazero17/HutechITTalent-containerpulling.git'",
+								"sudo bash -c 'cd /home/ec2-user/HutechITTalent-containerpulling && docker compose -f docker-compose-mysql.yaml up'"
+							]
 						]
 					}
 				},
