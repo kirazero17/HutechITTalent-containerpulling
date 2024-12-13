@@ -189,7 +189,6 @@
 				"ServiceName": {
 					"Fn::Sub": "com.amazonaws.${AWS::Region}.s3"
 				},
-				"PrivateDnsEnabled": true,
 				"PolicyDocument": {
 					"Version": "2012-10-17",
 					"Statement": [
