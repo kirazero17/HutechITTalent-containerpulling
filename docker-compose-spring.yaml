@@ -6,7 +6,7 @@ services:
       - 80:8070
     environment:
       #SPRING_DATASOURCE_URL: jdbc:mysql://mysql8-container:3306/myapp?serverTimezone=UTC&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql.app.phi:3306/myapp?serverTimezone=UTC&allowPublicKeyRetrieval=true          
+      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_IP}:3306/myapp?serverTimezone=UTC&allowPublicKeyRetrieval=true          
       MYSQL_ROOT_PASSWORD: 123456
       # REDIS_HOST: redis.app.phi.azn
       # REDIS_PORT: 6379
