@@ -264,7 +264,10 @@
 		"ec2InstanceSpring": {
 			"Type": "AWS::EC2::Instance",
 			"Properties": {
-				"ImageId": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64",
+				"ImageId": 
+				{
+					"Ref": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64/ami-id"
+				},
 				"InstanceType": {
 					"Ref": "projectinstancetype"
 				},
@@ -337,7 +340,10 @@
 		"ec2InstanceMySQL": {
 			"Type": "AWS::EC2::Instance",
 			"Properties": {
-				"ImageId": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64",
+				"ImageId": 
+				{
+					"Ref": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64/ami-id"
+				},
 				"InstanceType": {
 					"Ref": "projectinstancetype"
 				},
