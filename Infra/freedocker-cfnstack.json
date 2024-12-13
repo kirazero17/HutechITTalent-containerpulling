@@ -126,11 +126,19 @@
 			}
 		},
 		"projectPublicRouteTable": {
+			"Type": "AWS::EC2::RouteTable",
+			"Properties": {
+				"VpcId": {
+					"Ref": "projectvpc"
+				}
+			}
+		},
+		"projectPublicRoute": {
 			"Type": "AWS::EC2::Route",
 			"DependsOn": "projectInetGatewayAttachment",
 			"Properties": {
 				"RouteTableId": {
-					"Ref": "projectpublicsubnet"
+					"Ref": "projectPublicRouteTable"
 				},
 				"DestinationCidrBlock": "0.0.0.0/0",
 				"GatewayId": {
