@@ -307,11 +307,13 @@
 								"#!/bin/bash",
 								"sudo dnf update -y",
 								"sudo dnf install docker git wget -y",
+								"sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose",
+								"sudo bash -u ec2-user -c 'chmod +x /usr/local/bin/docker-compose'",
 								"sudo usermod -aG docker ec2-user",
 								"systemctl enable docker",
 								"sudo reboot",
 								"sudo service docker start",
-								"sudo bash -c 'git clone https://github.com/kirazero17/HutechITTalent-containerpulling.git'",
+								"sudo bash -u ec2-user -c 'git clone https://github.com/kirazero17/HutechITTalent-containerpulling.git'",
 								{
 									"Fn::Sub": [
 										"MYSQL_IP=${MYSQL_IP}",
@@ -325,7 +327,8 @@
 										}
 									]
 								},
-								"sudo bash -c 'cd /home/ec2-user/HutechITTalent-containerpulling && docker compose -f docker-compose-spring.yaml up'"
+								"sudo bash -u ec2-user -c 'cd /home/ec2-user/HutechITTalent-containerpulling && docker compose -f docker-compose-spring.yaml up'"
+
 							]
 						]
 					}
@@ -381,12 +384,14 @@
 								"#!/bin/bash",
 								"sudo dnf update -y",
 								"sudo dnf install docker git wget -y",
+								"sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose",
+								"sudo bash -u ec2-user -c 'chmod +x /usr/local/bin/docker-compose'",
 								"sudo usermod -aG docker ec2-user",
 								"systemctl enable docker",
 								"sudo reboot",
 								"sudo service docker start",
-								"sudo bash -c 'git clone https://github.com/kirazero17/HutechITTalent-containerpulling.git'",
-								"sudo bash -c 'cd /home/ec2-user/HutechITTalent-containerpulling && docker compose -f docker-compose-mysql.yaml up'"
+								"sudo bash -u ec2-user -c 'git clone https://github.com/kirazero17/HutechITTalent-containerpulling.git'",
+								"sudo bash -u ec2-user -c 'cd /home/ec2-user/HutechITTalent-containerpulling && docker compose -f docker-compose-mysql.yaml up'"
 							]
 						]
 					}
