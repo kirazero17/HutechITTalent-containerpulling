@@ -190,14 +190,6 @@
 					"Fn::Sub": "com.amazonaws.${AWS::Region}.s3"
 				},
 				"PrivateDnsEnabled": true,
-				"SubnetIds": [
-					{
-						"Ref": "projectpublicsubnet"
-					},
-					{
-						"Ref": "projectprivatesubnet"
-					}
-				],
 				"PolicyDocument": {
 					"Version": "2012-10-17",
 					"Statement": [
