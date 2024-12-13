@@ -266,7 +266,7 @@
 			"Properties": {
 				"ImageId": 
 				{
-					"Ref": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64/ami-id"
+					"Ref": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
 				},
 				"InstanceType": {
 					"Ref": "projectinstancetype"
@@ -342,7 +342,7 @@
 			"Properties": {
 				"ImageId": 
 				{
-					"Ref": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64/ami-id"
+					"Ref": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
 				},
 				"InstanceType": {
 					"Ref": "projectinstancetype"
