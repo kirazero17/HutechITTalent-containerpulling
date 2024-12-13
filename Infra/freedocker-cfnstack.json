@@ -1,0 +1,378 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "A free stack for 4 EC2 instances and a S3 gateway endpoint",
+	"Parameters": {
+		"InstanceType": {
+			"Type": "String",
+			"Default": "t2.micro",
+			"Description": "EC2 instance type"
+		},
+		"vpccidr": {
+			"Type": "String",
+			"Default": "172.19.12.0/24",
+			"Description": "CIDR of VPC"
+		},
+		"publiccidr": {
+			"Type": "String",
+			"Default": "172.19.12.0/25",
+			"Description": "CIDR of public subnet"
+		},
+		"privatedcidr": {
+			"Type": "String",
+			"Default": "172.19.12.128/25",
+			"Description": "CIDR of private subnet"
+		},
+		"availabilityzone": {
+			"Type": "String",
+			"Default": "us-east-1a",
+			"Description": "Availability Zone - Change this to accommodate your region"
+		},
+		"keypair": {
+			"Type": "String",
+			"Description": "Name of a key pair for the EC2 instances"
+		},
+		"projectinstancetype": {
+			"Type": "String",
+			"Default": "t2.micro",
+			"Description": "EC2 Instance type - applied for all instances"
+		}
+	},
+	"Resources": {
+		"projectvpc": {
+			"Type": "AWS::EC2::VPC",
+			"Properties": {
+				"CidrBlock": {
+					"Ref": "vpccidr"
+				},
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": {
+							"Fn::Sub": "${AWS::StackName}-vpc"
+						}
+					}
+				]
+			}
+		},
+		"projectpublicsubnet": {
+			"Type": "AWS::EC2::Subnet",
+			"Properties": {
+				"CidrBlock": {
+					"Ref": "publiccidr"
+				},
+				"VpcId": {
+					"Ref": "projectvpc"
+				},
+				"MapPublicIpOnLaunch": true,
+				"AvailabilityZone": {
+					"Ref": "availabilityzone"
+				},
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": {
+							"Fn::Sub": "${AWS::StackName}-public-subnet"
+						}
+					}
+				]
+			}
+		},
+		"projectprivatesubnet": {
+			"Type": "AWS::EC2::Subnet",
+			"Properties": {
+				"CidrBlock": {
+					"Ref": "publiccidr"
+				},
+				"VpcId": {
+					"Ref": "projectvpc"
+				},
+				"MapPublicIpOnLaunch": false,
+				"AvailabilityZone": {
+					"Ref": "availabilityzone"
+				},
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": {
+							"Fn::Sub": "${AWS::StackName}-private-subnet"
+						}
+					}
+				]
+			}
+		},
+		"projectinternetgateway": {
+			"Type": "AWS::EC2::InternetGateway",
+			"Properties": {
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": {
+							"Fn::Sub": "${AWS::StackName}-igw"
+						}
+					}
+				]
+			}
+		},
+		"projectInetGatewayAttachment": {
+			"Type": "AWS::EC2::VPCGatewayAttachment",
+			"DependsOn": "projectinternetgateway",
+			"Properties": {
+				"VpcId": {
+					"Ref": "projectvpc"
+				},
+				"InternetGatewayId": {
+					"Ref": "igwName"
+				}
+			}
+		},
+		"projectPublicRouteTable": {
+			"Type": "AWS::EC2::Route",
+			"DependsOn": "projectInetGatewayAttachment",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "projectpublicsubnet"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"GatewayId": {
+					"Ref": "projectinternetgateway"
+				}
+			}
+		},
+		"projectPublicSubnetRouteAssoc": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "projectPublicRouteTable"
+				},
+				"SubnetId": {
+					"Ref": "projectpublicsubnet"
+				}
+			}
+		},
+		"projectEC2secGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"VpcId": {
+					"Ref": "projectvpc"
+				},
+				"GroupDescription": "Limit connections to port 22",
+				"SecurityGroupIngress": [
+					{
+						"IpProtocol": "tcp",
+						"FromPort": 22,
+						"ToPort": 22,
+						"CidrIp": "0.0.0.0/0"
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": 80,
+						"ToPort": 80,
+						"CidrIp": "0.0.0.0/0"
+					}
+				],
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": {
+							"Fn::Sub": "${AWS::StackName}-vpc-secgroup"
+						}
+					}
+				]
+			}
+		},
+		"projectS3vpcEndpoint": {
+			"Type": "AWS::EC2::VPCEndpoint",
+			"Properties": {
+				"VpcId": {
+					"Ref": "projectvpc"
+				},
+				"ServiceName": {
+					"Fn::Sub": "com.amazonaws.${AWS::Region}.s3"
+				},
+				"PrivateDnsEnabled": true,
+				"SubnetIds": [
+					{
+						"Ref": "projectpublicsubnet"
+					},
+					{
+						"Ref": "projectprivatesubnet"
+					}
+				],
+				"PolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Principal": "*",
+							"Action": [
+								"s3:*"
+							],
+							"Resource": [
+								"arn:aws:s3:::amzn-s3-demo-bucket/*",
+								"arn:aws:s3:::amzn-s3-demo-bucket"
+							]
+						}
+					]
+				}
+			}
+		},
+		"projectEc2Role": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Principal": {
+								"Service": [
+									"ec2.amazonaws.com"
+								]
+							},
+							"Action": [
+								"sts:AssumeRole"
+							]
+						}
+					]
+				},
+				"ManagedPolicyArns": [
+					"arn:aws:iam::aws:policy/AmazonS3FullAccess"
+				]
+			}
+		},
+		"SpringInstanceProfile": {
+			"Type": "AWS::IAM::InstanceProfile",
+			"Properties": {
+				"InstanceProfileName": "String",
+				"Path": "String",
+				"Roles": [
+					{
+						"Ref": "projectEc2Role"
+					}
+				]
+			}
+		},
+		"MySqlInstanceProfile": {
+			"Type": "AWS::IAM::InstanceProfile",
+			"Properties": {
+				"InstanceProfileName": "String",
+				"Path": "String",
+				"Roles": [
+					{
+						"Ref": "projectEc2Role"
+					}
+				]
+			}
+		},
+		"ec2InstanceSpring": {
+			"Type": "AWS::EC2::Instance",
+			"Properties": {
+				"ImageId": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64",
+				"InstanceType": {
+					"Ref": "projectinstancetype"
+				},
+				"InstanceProfile": "SpringInstanceProfile",
+				"NetworkInterfaces": [
+					{
+						"DeviceIndex": "0",
+						"AssociatePublicIpAddress": true,
+						"SubnetId": {
+							"Ref": "projectpublicsubnet"
+						},
+						"GroupSet": {
+							"Fn::GetAtt": [
+								"projectEC2secGroup",
+								"GroupId"
+							]
+						}
+					}
+				],
+				"Userdata": {
+					"Fn::Base64": {
+						"Fn::Join": [
+							"\n",
+							"#!/bin/bash",
+							"sudo dnf update -y",
+							"sudo dnf install docker git wget -y",
+							"sudo usermod -aG docker ec2-user",
+							"systemctl enable docker",
+							"sudo reboot",
+							"sudo service docker start",
+							"sudo bash -c 'git clone https://github.com/kirazero17/HutechITTalent-containerpulling.git'",
+							{
+								"Fn::Sub": [
+									"MYSQL_IP=${MYSQL_IP}",
+									{
+										"Fn::GetAtt": [
+											"ec2InstanceMySQL",
+											"PrivateIpAddress"
+										]
+									}
+								]
+							},
+							"sudo bash -c 'cd /home/ec2-user/HutechITTalent-containerpulling && docker compose -f docker-compose-spring.yaml up'"
+						]
+					}
+				},
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": {
+							"Fn::Sub": "${AWS::StackName}-ec2-spring"
+						}
+					}
+				]
+			}
+		},
+		"ec2InstanceMySQL": {
+			"Type": "AWS::EC2::Instance",
+			"Properties": {
+				"ImageId": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64",
+				"InstanceType": {
+					"Ref": "projectinstancetype"
+				},
+				"InstanceProfile": "MySqlInstanceProfile",
+				"NetworkInterfaces": [
+					{
+						"DeviceIndex": "0",
+						"AssociatePublicIpAddress": true,
+						"SubnetId": {
+							"Ref": "projectpublicsubnet"
+						},
+						"GroupSet": {
+							"Fn::GetAtt": [
+								"projectEC2secGroup",
+								"GroupId"
+							]
+						}
+					}
+				],
+				"Userdata": {
+					"Fn::Base64": {
+						"Fn::Join": [
+							"\n",
+							"#!/bin/bash",
+							"sudo dnf update -y",
+							"sudo dnf install docker git wget -y",
+							"sudo usermod -aG docker ec2-user",
+							"systemctl enable docker",
+							"sudo reboot",
+							"sudo service docker start",
+							"sudo bash -c 'git clone https://github.com/kirazero17/HutechITTalent-containerpulling.git'",
+							"sudo bash -c 'cd /home/ec2-user/HutechITTalent-containerpulling && docker compose -f docker-compose-mysql.yaml up'"
+						]
+					}
+				},
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": {
+							"Fn::Sub": "${AWS::StackName}-ec2-mysql"
+						}
+					}
+				]
+			}
+		}
+	},
+	"Outputs": {}
+}
