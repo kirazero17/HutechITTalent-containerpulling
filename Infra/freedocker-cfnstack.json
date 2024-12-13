@@ -243,8 +243,7 @@
 		"SpringInstanceProfile": {
 			"Type": "AWS::IAM::InstanceProfile",
 			"Properties": {
-				"InstanceProfileName": "String",
-				"Path": "String",
+				"InstanceProfileName": "EC2ProfileSpring",
 				"Roles": [
 					{
 						"Ref": "projectEc2Role"
@@ -255,8 +254,7 @@
 		"MySqlInstanceProfile": {
 			"Type": "AWS::IAM::InstanceProfile",
 			"Properties": {
-				"InstanceProfileName": "String",
-				"Path": "String",
+				"InstanceProfileName": "EC2ProfileSQL",
 				"Roles": [
 					{
 						"Ref": "projectEc2Role"
@@ -271,7 +269,10 @@
 				"InstanceType": {
 					"Ref": "projectinstancetype"
 				},
-				"IamInstanceProfile": "SpringInstanceProfile",
+				"IamInstanceProfile":
+				{
+					"Ref": "SpringInstanceProfile"
+				},
 				"KeyName" : {
 					"Ref": "keypair"
 				},
@@ -339,7 +340,10 @@
 				"InstanceType": {
 					"Ref": "projectinstancetype"
 				},
-				"IamInstanceProfile": "MySqlInstanceProfile",
+				"IamInstanceProfile":
+				{
+					"Ref": "MySqlInstanceProfile"
+				},
 				"KeyName" : {
 					"Ref": "keypair"
 				},
