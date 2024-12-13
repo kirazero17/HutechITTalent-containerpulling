@@ -1,0 +1,16 @@
+services:
+  redis-container:
+    image: docker.io/redis:7.2.3
+    container_name: redis-container
+    restart: always
+    ports:
+      - "6379:6379" # Port mapping for Redis, you can change the host port as needed
+    volumes:
+      - ./redis-data:/data # Mount a volume for Redis data persistence
+    networks:
+      - phi-app-network
+
+networks:
+  phi-app-network:
+    name: phi-app-network
+    driver: bridge
